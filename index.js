@@ -6,6 +6,7 @@ const https = require('https')
 let date = new Date()
 date = date.toISOString()
 date = date.slice(0,19).replace('T', ' ')
+const PRIVATE_KEY = 'glc-01-b24bd302c74d.json'
 
 
 class RadioBot {
@@ -13,6 +14,7 @@ class RadioBot {
         console.log("Instanciating.")
         this.date = date
         this.name = "I'm radio bot"
+        this.processedUrls = []
     }
 
     // Simple function for our downloads
@@ -27,15 +29,18 @@ class RadioBot {
       }
 
     // Main function listening to media
-    async listen(url) {
+    async listen(url, timeout = 10) {
         try {
             // Prepare
             console.log("Launching")
-            const browser = await puppeteer.launch({headless:false})
+            const browser = await puppeteer.launch({headless:true})
             const page = await browser.newPage()
             page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36')
             const keyboard = await page.keyboard
             page.setViewport({width:1920, height:1080})
+
+            // SetTimeout
+            setTimeout(timeout => browser.close(), timeout*60*1000)
 
             // Instructions
             await page.goto(url)
@@ -47,7 +52,8 @@ class RadioBot {
             page.on('request', request => {
 
                 let fileExtension = request.url().slice(-3, request.url().length)
-                if (fileExtension === 'mp3') {
+                if (this.processedUrls.includes(request.url())) {console.log("Resource Already Processed.")}
+                if (fileExtension === 'mp3' && ! this.processedUrls.includes(request.url())) {
 
                   let url = request.url()
                   let ts = new Date().toISOString().replace(/:/g,"_")
@@ -59,6 +65,8 @@ class RadioBot {
                   console.log(`This is the resource type: ${request.resourceType()}`)
                   
                   this.download(request.url(), filename, console.log("Downloaded."))
+
+                  this.processedUrls.push(url)
                 }
             })
         }
@@ -70,5 +78,9 @@ class RadioBot {
 }
 
 const rb = new RadioBot()
+//rb.listen("https://radiocut.fm/radiostation/city/listen/")
+//rb.listen("https://radiocut.fm/radiostation/cnn-argentina/listen/")
+//rb.listen("http://radiocut.fm/audiocut/macri-gato/")
+
 rb.listen("https://radiocut.fm/radiostation/city/listen/")
-rb.listen("https://radiocut.fm/radiostation/cnn-argentina/listen/")
+setInterval(x => rb.listen("https://radiocut.fm/radiostation/city/listen/"), 10*60*1000)
