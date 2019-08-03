@@ -15,6 +15,7 @@ class RadioBot {
         this.date = date
         this.name = "I'm radio bot"
         this.processedUrls = []
+        this.processed
     }
 
     // Simple function for our downloads
@@ -57,7 +58,8 @@ class RadioBot {
 
                   let url = request.url()
                   let ts = new Date().toISOString().replace(/:/g,"_")
-                  let filename = `${ts}_cut.mp3`
+                  let filename = url.replace(/\//g,"_").replace(/:/g,"#")
+                  //let filename = `${ts}_cut.mp3`
                   
                   console.log("MP3 FOUND!")
                   console.log(`This is the URL: ${url}`)
@@ -84,3 +86,4 @@ const rb = new RadioBot()
 
 rb.listen("https://radiocut.fm/radiostation/city/listen/")
 setInterval(x => rb.listen("https://radiocut.fm/radiostation/city/listen/"), 10*60*1000)
+
