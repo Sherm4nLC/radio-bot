@@ -35,6 +35,7 @@ class RadioBot {
       await child_process.exec(cmd, (err, stdout, stderr) => {
           if (err) {console.log(err)}
           console.log(stdout)
+          console.log(`Uploaded to storage: ${filename}`)
       })
     }
 
