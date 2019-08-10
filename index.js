@@ -14,8 +14,9 @@ class RadioBot {
         console.log("Instanciating.")
         this.date = date
         this.name = "I'm radio bot"
+        this.storageLocation = "gs://glc-01/radio-bot-exports/"
         this.processedUrls = []
-        this.fileList = ''
+        this.storageFiles = ''
     }
 
     // Simple function for our downloads
@@ -29,21 +30,28 @@ class RadioBot {
         });
       }
 
-    async checkBucketFiles() {
-      const cmd = 'gsutil ls gs://glc-01/radio-bot-exports/* > check_radio_exports.txt'
+    async uploadToStorage(filename) {
+      const cmd = 'gsutil cp '+filename+" "+this.storageLocation+filename
       await child_process.exec(cmd, (err, stdout, stderr) => {
           if (err) {console.log(err)}
           console.log(stdout)
       })
+    }
+
+    async checkBucketFiles() {
+      // download file list from g storage
+      const cmd = 'gsutil ls '+this.storageLocation+'* > check_radio_exports.txt'
+      await child_process.exec(cmd, (err, stdout, stderr) => {
+          if (err) {console.log(err)}
+          console.log(stdout)
+      })
+      // read file, parse and assign to class property
       let fileList  = await fs.readFileSync("check_radio_exports.txt").toString();
       fileList = fileList.split("\n")
-      fileList.pop("")
-      fileList = fileList.map(s => s.replace("\r",""))
-      this.fileList = fileList
-
-      console.log(this.name)
-      console.log(this.fileList)
-
+      fileList = fileList.map(s => s.replace("\r","").replace(this.storageLocation, ""))
+      fileList = fileList.filter(s => s !== "")
+      this.storageFiles = fileList
+      console.log("Current files on storage: ", fileList)
     }
 
     // Main function listening to media
@@ -71,7 +79,11 @@ class RadioBot {
 
                 let fileExtension = request.url().slice(-3, request.url().length)
                 if (this.processedUrls.includes(request.url())) {console.log("Resource Already Processed.")}
-                if (fileExtension === 'mp3' && ! this.processedUrls.includes(request.url())) {
+                if (this.storageFiles.includes(request.url())) {console.log("Resource Already in Storage.")}
+                if (fileExtension === 'mp3'
+                && ! this.processedUrls.includes(request.url())
+                && ! this.storageFiles.includes(request.url())
+                ) {
 
                   let url = request.url()
                   let ts = new Date().toISOString().replace(/:/g,"_")
@@ -84,6 +96,7 @@ class RadioBot {
                   console.log(`This is the resource type: ${request.resourceType()}`)
                   
                   this.download(request.url(), filename, console.log("Downloaded."))
+                  this.uploadToStorage(filename)
 
                   this.processedUrls.push(url)
                 }
@@ -105,3 +118,4 @@ const rb = new RadioBot()
 // setInterval(x => rb.listen("https://radiocut.fm/radiostation/city/listen/"), 10*60*1000)
 
 rb.checkBucketFiles()
+rb.listen("https://radiocut.fm/radiostation/city/listen/")
