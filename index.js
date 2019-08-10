@@ -15,7 +15,7 @@ class RadioBot {
         this.date = date
         this.name = "I'm radio bot"
         this.processedUrls = []
-        this.processed
+        this.fileList = ''
     }
 
     // Simple function for our downloads
@@ -28,6 +28,23 @@ class RadioBot {
           });
         });
       }
+
+    async checkBucketFiles() {
+      const cmd = 'gsutil ls gs://glc-01/radio-bot-exports/* > check_radio_exports.txt'
+      await child_process.exec(cmd, (err, stdout, stderr) => {
+          if (err) {console.log(err)}
+          console.log(stdout)
+      })
+      let fileList  = await fs.readFileSync("check_radio_exports.txt").toString();
+      fileList = fileList.split("\n")
+      fileList.pop("")
+      fileList = fileList.map(s => s.replace("\r",""))
+      this.fileList = fileList
+
+      console.log(this.name)
+      console.log(this.fileList)
+
+    }
 
     // Main function listening to media
     async listen(url, timeout = 10) {
@@ -58,7 +75,7 @@ class RadioBot {
 
                   let url = request.url()
                   let ts = new Date().toISOString().replace(/:/g,"_")
-                  let filename = url.replace(/\//g,"_").replace(/:/g,"#")
+                  let filename = url.replace(/\/|:/g,"_")
                   //let filename = `${ts}_cut.mp3`
                   
                   console.log("MP3 FOUND!")
@@ -84,6 +101,7 @@ const rb = new RadioBot()
 //rb.listen("https://radiocut.fm/radiostation/cnn-argentina/listen/")
 //rb.listen("http://radiocut.fm/audiocut/macri-gato/")
 
-rb.listen("https://radiocut.fm/radiostation/city/listen/")
-setInterval(x => rb.listen("https://radiocut.fm/radiostation/city/listen/"), 10*60*1000)
+// rb.listen("https://radiocut.fm/radiostation/city/listen/")
+// setInterval(x => rb.listen("https://radiocut.fm/radiostation/city/listen/"), 10*60*1000)
 
+rb.checkBucketFiles()
