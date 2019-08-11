@@ -2,6 +2,9 @@ const puppeteer = require('puppeteer')
 const fs = require('fs')
 const child_process = require('child_process')
 const https = require('https')
+const bunyan = require('bunyan');
+const {LoggingBunyan} = require('@google-cloud/logging-bunyan');
+
 
 let date = new Date()
 date = date.toISOString()
@@ -37,6 +40,27 @@ class RadioBot {
           console.log(stdout)
           console.log(`Uploaded to storage: ${filename}`)
       })
+    }
+
+    createLogger() {
+      // Creates a Bunyan Stackdriver Logging client
+      const loggingBunyan = new LoggingBunyan();
+
+      // Create a Bunyan logger that streams to Stackdriver Logging
+      // Logs will be written to: "projects/YOUR_PROJECT_ID/logs/bunyan_log"
+      const logger = bunyan.createLogger({
+        // The JSON payload of the log as it appears in Stackdriver Logging
+        // will contain "name": "my-service"
+        name: 'radio-bot',
+        streams: [
+          // Log to the console at 'info' and above
+          {stream: process.stdout, level: 'info'},
+          // And log to Stackdriver Logging, logging at 'info' and above
+          loggingBunyan.stream('info'),
+        ],
+      });
+
+      this.logger = logger
     }
 
     async checkBucketFiles() {
@@ -118,5 +142,7 @@ const rb = new RadioBot()
 // rb.listen("https://radiocut.fm/radiostation/city/listen/")
 // setInterval(x => rb.listen("https://radiocut.fm/radiostation/city/listen/"), 10*60*1000)
 
-rb.checkBucketFiles()
-rb.listen("https://radiocut.fm/radiostation/city/listen/")
+// rb.checkBucketFiles()
+// rb.listen("https://radiocut.fm/radiostation/city/listen/")
+rb.createLogger()
+rb.logger.info("some status")

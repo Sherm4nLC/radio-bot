@@ -17,6 +17,8 @@
   },
   "homepage": "https://github.com/Sherm4nLC/radio-bot#readme",
   "dependencies": {
+    "@google-cloud/logging-bunyan": "^1.2.1",
+    "bunyan": "^1.8.12",
     "puppeteer": "^1.19.0"
   }
 }
