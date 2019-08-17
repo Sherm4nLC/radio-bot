@@ -131,7 +131,8 @@ class RadioBot {
         }
         catch(e) {
            console.log(e)
-	        process.exit()
+           cmd = `echo "${e}" > ${date}_error.txt`
+	         process.exit()
         }
     }
 }
