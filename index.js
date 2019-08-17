@@ -131,8 +131,8 @@ class RadioBot {
         }
         catch(e) {
            console.log(e.toString())
-           cmd = `echo \"${e.toString()}\" > error.txt`
-           child_process.execSync(cmd)
+           //cmd = `echo \"${e.toString()}\" > error.txt`
+           //child_process.execSync(cmd)
 	         process.exit()
         }
     }
@@ -143,11 +143,12 @@ const rb = new RadioBot()
 //rb.listen("https://radiocut.fm/radiostation/cnn-argentina/listen/")
 //rb.listen("http://radiocut.fm/audiocut/macri-gato/")
 
-// rb.listen("https://radiocut.fm/radiostation/city/listen/")
-// setInterval(x => rb.listen("https://radiocut.fm/radiostation/city/listen/"), 10*60*1000)
-
 rb.checkBucketFiles()
 rb.listen("https://radiocut.fm/radiostation/city/listen/")
+setInterval(x => rb.listen("https://radiocut.fm/radiostation/city/listen/"), 10*60*1000)
+
+// rb.checkBucketFiles()
+// rb.listen("https://radiocut.fm/radiostation/city/listen/")
 
 //rb.createLogger()
 //rb.logger.info("some status")
