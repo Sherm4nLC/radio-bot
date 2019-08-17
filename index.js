@@ -63,15 +63,17 @@ class RadioBot {
       this.logger = logger
     }
 
-    async checkBucketFiles() {
+    checkBucketFiles() {
       // download file list from g storage
       const cmd = 'gsutil ls '+this.storageLocation+'* > check_radio_exports.txt'
-      await child_process.exec(cmd, (err, stdout, stderr) => {
-          if (err) {console.log(err)}
-          console.log(stdout)
-      })
+      // child_process.exec(cmd, (err, stdout, stderr) => {
+      //     if (err) {console.log(err)}
+      //     console.log(stdout)
+      // })
+      child_process.execSync(cmd)
+
       // read file, parse and assign to class property
-      let fileList  = await fs.readFileSync("check_radio_exports.txt").toString();
+      let fileList  = fs.readFileSync("check_radio_exports.txt").toString();
       fileList = fileList.split("\n")
       fileList = fileList.map(s => s.replace("\r","").replace(this.storageLocation, ""))
       fileList = fileList.filter(s => s !== "")
@@ -142,7 +144,8 @@ const rb = new RadioBot()
 // rb.listen("https://radiocut.fm/radiostation/city/listen/")
 // setInterval(x => rb.listen("https://radiocut.fm/radiostation/city/listen/"), 10*60*1000)
 
-// rb.checkBucketFiles()
-// rb.listen("https://radiocut.fm/radiostation/city/listen/")
-rb.createLogger()
-rb.logger.info("some status")
+rb.checkBucketFiles()
+rb.listen("https://radiocut.fm/radiostation/city/listen/")
+
+//rb.createLogger()
+//rb.logger.info("some status")
