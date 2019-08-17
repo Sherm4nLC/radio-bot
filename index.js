@@ -131,7 +131,7 @@ class RadioBot {
         }
         catch(e) {
            console.log(e)
-           cmd = `echo "${e.toString()}" > ${date}_error.txt`
+           cmd = `echo "${e.toString()}" > error.txt`
            child_process.execSync(cmd)
 	         process.exit()
         }
